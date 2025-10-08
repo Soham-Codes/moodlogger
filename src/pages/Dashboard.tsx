@@ -1,0 +1,123 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Session } from "@supabase/supabase-js";
+import { Button } from "@/components/ui/button";
+import { LogOut, BookOpen, Flame } from "lucide-react";
+import { toast } from "sonner";
+import MoodLogger from "@/components/MoodLogger";
+import MoodHistory from "@/components/MoodHistory";
+
+const Dashboard = () => {
+  const navigate = useNavigate();
+  const [session, setSession] = useState<Session | null>(null);
+  const [streak, setStreak] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (!session) {
+        navigate("/auth");
+      } else {
+        calculateStreak(session.user.id);
+      }
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const calculateStreak = async (userId: string) => {
+    const { data, error } = await supabase
+      .from("mood_entries")
+      .select("created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(30);
+
+    if (error || !data) return;
+
+    let currentStreak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < data.length; i++) {
+      const entryDate = new Date(data[i].created_at);
+      entryDate.setHours(0, 0, 0, 0);
+      
+      const daysDiff = Math.floor((today.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff === currentStreak) {
+        currentStreak++;
+      } else {
+        break;
+      }
+    }
+
+    setStreak(currentStreak);
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Signed out successfully");
+    navigate("/");
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen" style={{ background: "var(--gradient-subtle)" }}>
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="text-2xl">💙</span>
+            </div>
+            <h1 className="text-xl font-bold">Student Wellbeing</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            {streak > 0 && (
+              <div className="flex items-center gap-2 bg-accent/10 px-4 py-2 rounded-full">
+                <Flame className="w-5 h-5 text-accent" />
+                <span className="font-semibold">{streak} day streak!</span>
+              </div>
+            )}
+            <Button variant="outline" size="sm" onClick={() => navigate("/resources")}>
+              <BookOpen className="w-4 h-4 mr-2" />
+              Resources
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="grid gap-8 lg:grid-cols-2">
+          <MoodLogger onMoodLogged={() => calculateStreak(session?.user.id || "")} />
+          <MoodHistory />
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default Dashboard;
