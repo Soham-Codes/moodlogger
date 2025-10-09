@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Heart, TrendingUp, Shield, Sparkles } from "lucide-react";
+import { TrendingUp, Shield, Sparkles } from "lucide-react";
+import moodLoggerLogo from "@/assets/mood-logger-logo.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -9,17 +10,15 @@ const Index = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
-        <div className="container mx-auto px-4 py-20 text-center text-white">
+        <div className="container mx-auto px-4 py-20 text-center">
           <div className="max-w-3xl mx-auto space-y-6">
             <div className="inline-block mb-4 animate-fade-in">
-              <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto">
-                <Heart className="w-10 h-10" />
-              </div>
+              <img src={moodLoggerLogo} alt="Mood Logger" className="w-32 h-32 mx-auto" />
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold animate-fade-in">
-              Your Wellbeing Journey Starts Here
+            <h1 className="text-5xl md:text-6xl font-bold animate-fade-in text-secondary">
+              Mood Logger
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 animate-fade-in">
+            <p className="text-xl md:text-2xl text-secondary/80 animate-fade-in">
               Track your mood, discover personalized tips, and build lasting wellbeing habits
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4 animate-fade-in">
@@ -34,7 +33,7 @@ const Index = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="text-lg px-8 bg-white/10 border-white/30 text-white hover:bg-white/20"
+                className="text-lg px-8"
                 onClick={() => navigate("/auth")}
               >
                 Sign In
@@ -101,7 +100,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="py-8 px-4 border-t">
         <div className="container mx-auto text-center text-muted-foreground">
-          <p>© 2025 Student Wellbeing. Supporting students, one day at a time.</p>
+          <p>© 2025 Mood Logger. Supporting students, one day at a time.</p>
         </div>
       </footer>
     </div>
