@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Sparkles } from "lucide-react";
 
@@ -26,9 +28,12 @@ interface MoodLoggerProps {
   onMoodLogged: () => void;
 }
 
+const activities = ["Study", "Social", "Exercise", "Sleep", "Hobbies", "Work"];
+
 const MoodLogger = ({ onMoodLogged }: MoodLoggerProps) => {
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
   const [note, setNote] = useState("");
+  const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoggedToday, setHasLoggedToday] = useState(false);
   const [showTip, setShowTip] = useState(false);
@@ -55,6 +60,7 @@ const MoodLogger = ({ onMoodLogged }: MoodLoggerProps) => {
       setHasLoggedToday(true);
       setSelectedMood(data.mood_level);
       setNote(data.note || "");
+      setSelectedActivities(data.activity_tags || []);
       setShowTip(true);
     }
   };
@@ -75,6 +81,7 @@ const MoodLogger = ({ onMoodLogged }: MoodLoggerProps) => {
         user_id: user.id,
         mood_level: selectedMood,
         note: note.trim() || null,
+        activity_tags: selectedActivities,
       });
 
       if (error) throw error;
@@ -120,6 +127,33 @@ const MoodLogger = ({ onMoodLogged }: MoodLoggerProps) => {
 
         {selectedMood !== null && !hasLoggedToday && (
           <div className="space-y-4 animate-fade-in">
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">What activities have you done today?</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {activities.map((activity) => (
+                  <div key={activity} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={activity}
+                      checked={selectedActivities.includes(activity)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedActivities([...selectedActivities, activity]);
+                        } else {
+                          setSelectedActivities(selectedActivities.filter((a) => a !== activity));
+                        }
+                      }}
+                    />
+                    <Label
+                      htmlFor={activity}
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      {activity}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <Textarea
               placeholder="How's your day going? (optional)"
               value={note}

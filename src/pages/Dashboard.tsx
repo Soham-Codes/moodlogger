@@ -3,10 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { LogOut, BookOpen, Flame } from "lucide-react";
+import { LogOut, BookOpen, Flame, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import MoodLogger from "@/components/MoodLogger";
 import MoodHistory from "@/components/MoodHistory";
+import MoodSummary from "@/components/MoodSummary";
+import Achievements from "@/components/Achievements";
+import JournalEntry from "@/components/JournalEntry";
+import ReflectionPrompts from "@/components/ReflectionPrompts";
+import CrisisResources from "@/components/CrisisResources";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -92,6 +97,13 @@ const Dashboard = () => {
               <BookOpen className="w-4 h-4 mr-2" />
               Resources
             </Button>
+            <Button variant="destructive" size="sm" onClick={() => {
+              const element = document.getElementById("crisis-resources");
+              element?.scrollIntoView({ behavior: "smooth" });
+            }}>
+              <AlertCircle className="w-4 h-4 mr-2" />
+              Crisis Help
+            </Button>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
@@ -100,10 +112,28 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
+      <main className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
+        {/* Top Section: Mood Summary & Achievements */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <MoodSummary />
+          <Achievements />
+        </div>
+
+        {/* Reflection Prompt */}
+        <ReflectionPrompts />
+
+        {/* Main Mood Section */}
         <div className="grid gap-8 lg:grid-cols-2">
           <MoodLogger onMoodLogged={() => calculateStreak(session?.user.id || "")} />
           <MoodHistory />
+        </div>
+
+        {/* Journal Entry */}
+        <JournalEntry />
+
+        {/* Crisis Resources */}
+        <div id="crisis-resources">
+          <CrisisResources />
         </div>
       </main>
     </div>
