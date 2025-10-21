@@ -14,8 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          achievement_type: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_type: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_type?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      crisis_resources: {
+        Row: {
+          available_hours: string | null
+          category: string
+          created_at: string
+          description: string
+          id: string
+          is_emergency: boolean | null
+          phone: string | null
+          title: string
+          url: string | null
+        }
+        Insert: {
+          available_hours?: string | null
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          is_emergency?: boolean | null
+          phone?: string | null
+          title: string
+          url?: string | null
+        }
+        Update: {
+          available_hours?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_emergency?: boolean | null
+          phone?: string | null
+          title?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
+      journal_entries: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mood_entries: {
         Row: {
+          activity_tags: string[] | null
           created_at: string
           id: string
           mood_level: number
@@ -23,6 +105,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          activity_tags?: string[] | null
           created_at?: string
           id?: string
           mood_level: number
@@ -30,6 +113,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          activity_tags?: string[] | null
           created_at?: string
           id?: string
           mood_level?: number
