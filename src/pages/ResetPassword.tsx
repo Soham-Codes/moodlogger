@@ -43,15 +43,21 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
+      // Update the password
+      const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
       });
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      toast.success("Password updated successfully!");
-      navigate("/auth");
+      toast.success("Password updated successfully! Redirecting to dashboard...");
+      
+      // Wait a moment for the session to be updated, then navigate to dashboard
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
     } catch (error: any) {
+      console.error("Password reset error:", error);
       toast.error(error.message || "Failed to reset password");
     } finally {
       setIsLoading(false);
