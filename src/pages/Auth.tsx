@@ -9,6 +9,43 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Heart, Loader2 } from "lucide-react";
+import { z } from "zod";
+
+// Validation schemas
+const signUpSchema = z.object({
+  fullName: z.string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name must be less than 100 characters")
+    .regex(/^[a-zA-Z\s'-]+$/, "Name can only contain letters, spaces, hyphens, and apostrophes"),
+  email: z.string()
+    .trim()
+    .email("Invalid email address")
+    .max(255, "Email must be less than 255 characters")
+    .toLowerCase(),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .max(72, "Password must be less than 72 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number")
+});
+
+const signInSchema = z.object({
+  email: z.string()
+    .trim()
+    .email("Invalid email address")
+    .toLowerCase(),
+  password: z.string()
+    .min(1, "Password is required")
+});
+
+const resetPasswordSchema = z.object({
+  email: z.string()
+    .trim()
+    .email("Invalid email address")
+    .toLowerCase()
+});
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -25,12 +62,19 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      // Validate inputs
+      const validatedData = signUpSchema.parse({
+        fullName,
         email,
-        password,
+        password
+      });
+
+      const { error } = await supabase.auth.signUp({
+        email: validatedData.email,
+        password: validatedData.password,
         options: {
           data: {
-            full_name: fullName,
+            full_name: validatedData.fullName,
           },
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -38,9 +82,14 @@ const Auth = () => {
 
       if (error) throw error;
 
-      toast.success("Account created! Please check your email to verify.");
+      toast.success("Account created successfully!");
+      navigate("/dashboard");
     } catch (error: any) {
-      toast.error(error.message || "Failed to create account");
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      } else {
+        toast.error(error.message || "Failed to create account");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -51,9 +100,15 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      // Validate inputs
+      const validatedData = signInSchema.parse({
         email,
-        password,
+        password
+      });
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: validatedData.email,
+        password: validatedData.password,
       });
 
       if (error) throw error;
@@ -61,7 +116,11 @@ const Auth = () => {
       toast.success("Welcome back!");
       navigate("/dashboard");
     } catch (error: any) {
-      toast.error(error.message || "Failed to sign in");
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      } else {
+        toast.error(error.message || "Failed to sign in");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +131,12 @@ const Auth = () => {
     setIsResetLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      // Validate email
+      const validatedData = resetPasswordSchema.parse({
+        email: resetEmail
+      });
+
+      const { error } = await supabase.auth.resetPasswordForEmail(validatedData.email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
@@ -82,7 +146,11 @@ const Auth = () => {
       setIsDialogOpen(false);
       setResetEmail("");
     } catch (error: any) {
-      toast.error(error.message || "Failed to send reset email");
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      } else {
+        toast.error(error.message || "Failed to send reset email");
+      }
     } finally {
       setIsResetLoading(false);
     }
@@ -214,8 +282,11 @@ const Auth = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={8}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Must be at least 8 characters with uppercase, lowercase, and number
+                  </p>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? (
