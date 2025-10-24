@@ -18,12 +18,14 @@ const Dashboard = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [firstName, setFirstName] = useState<string>("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
         calculateStreak(session.user.id);
+        fetchUserProfile(session.user.id);
       }
     });
 
@@ -33,11 +35,25 @@ const Dashboard = () => {
       setSession(session);
       if (session) {
         calculateStreak(session.user.id);
+        fetchUserProfile(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", userId)
+      .single();
+
+    if (data?.full_name) {
+      const firstName = data.full_name.split(" ")[0];
+      setFirstName(firstName);
+    }
+  };
 
   const calculateStreak = async (userId: string) => {
     const { data, error } = await supabase
@@ -113,6 +129,13 @@ const Dashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
+        {/* Welcome Section */}
+        {firstName && (
+          <div className="text-center space-y-2 py-4">
+            <h2 className="text-3xl font-bold">Hi {firstName}! 👋</h2>
+            <p className="text-muted-foreground">Glad you stopped by. How are you feeling today?</p>
+          </div>
+        )}
         {/* Top Section: Mood Summary & Achievements */}
         <div className="grid gap-6 lg:grid-cols-2">
           <MoodSummary />
