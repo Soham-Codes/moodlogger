@@ -47,10 +47,15 @@ const Dashboard = () => {
       .from("profiles")
       .select("full_name")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching profile:", error);
+      return;
+    }
 
     if (data?.full_name) {
-      const firstName = data.full_name.split(" ")[0];
+      const firstName = data.full_name.trim().split(" ")[0];
       setFirstName(firstName);
     }
   };
