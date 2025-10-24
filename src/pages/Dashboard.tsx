@@ -10,7 +10,6 @@ import MoodHistory from "@/components/MoodHistory";
 import MoodSummary from "@/components/MoodSummary";
 import Achievements from "@/components/Achievements";
 import JournalEntry from "@/components/JournalEntry";
-import ReflectionPrompts from "@/components/ReflectionPrompts";
 import CrisisResources from "@/components/CrisisResources";
 
 const Dashboard = () => {
@@ -146,9 +145,6 @@ const Dashboard = () => {
           <MoodSummary />
           <Achievements />
         </div>
-
-        {/* Reflection Prompt */}
-        <ReflectionPrompts />
 
         {/* Main Mood Section */}
         <div className="grid gap-8 lg:grid-cols-2">

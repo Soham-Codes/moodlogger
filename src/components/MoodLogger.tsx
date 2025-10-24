@@ -37,6 +37,8 @@ const MoodLogger = ({ onMoodLogged }: MoodLoggerProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoggedToday, setHasLoggedToday] = useState(false);
   const [showTip, setShowTip] = useState(false);
+  const [aiInsight, setAiInsight] = useState<string>("");
+  const [isLoadingInsight, setIsLoadingInsight] = useState(false);
 
   useEffect(() => {
     checkTodayEntry();
@@ -89,11 +91,44 @@ const MoodLogger = ({ onMoodLogged }: MoodLoggerProps) => {
       toast.success("Mood logged successfully!");
       setShowTip(true);
       setHasLoggedToday(true);
+      
+      // Get AI insights after logging
+      if (selectedMood) {
+        await getAIInsights(selectedMood, note);
+      }
+      
       onMoodLogged();
     } catch (error: any) {
       toast.error(error.message || "Failed to log mood");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const getAIInsights = async (moodLevel: number, noteText: string) => {
+    setIsLoadingInsight(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("mood-insights", {
+        body: { moodLevel, note: noteText }
+      });
+
+      if (error) {
+        console.error("Error getting AI insights:", error);
+        // Fall back to default tip if AI fails
+        setAiInsight(tips[moodLevel as keyof typeof tips]);
+        return;
+      }
+
+      if (data?.insight) {
+        setAiInsight(data.insight);
+      } else {
+        setAiInsight(tips[moodLevel as keyof typeof tips]);
+      }
+    } catch (error) {
+      console.error("Error calling mood-insights:", error);
+      setAiInsight(tips[moodLevel as keyof typeof tips]);
+    } finally {
+      setIsLoadingInsight(false);
     }
   };
 
@@ -171,11 +206,18 @@ const MoodLogger = ({ onMoodLogged }: MoodLoggerProps) => {
           <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2 animate-fade-in">
             <div className="flex items-center gap-2 text-primary font-semibold">
               <Sparkles className="w-5 h-5" />
-              <span>Tip for You</span>
+              <span>AI Insights for You</span>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {tips[selectedMood as keyof typeof tips]}
-            </p>
+            {isLoadingInsight ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                <span>Getting personalized insights...</span>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                {aiInsight || tips[selectedMood as keyof typeof tips]}
+              </p>
+            )}
           </div>
         )}
       </CardContent>
