@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { LogOut, BookOpen, Flame, AlertCircle } from "lucide-react";
+import { LogOut, BookOpen, Flame, AlertCircle, Brain, Music } from "lucide-react";
 import { toast } from "sonner";
 import MoodLogger from "@/components/MoodLogger";
 import MoodHistory from "@/components/MoodHistory";
@@ -135,9 +135,19 @@ const Dashboard = () => {
       <main className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
         {/* Welcome Section */}
         {firstName && (
-          <div className="text-center space-y-2 py-4">
+          <div className="text-center space-y-4 py-4">
             <h2 className="text-3xl font-bold">Hi {firstName}! 👋</h2>
             <p className="text-muted-foreground">Glad you stopped by. How are you feeling today?</p>
+            <div className="flex gap-4 justify-center mt-4">
+              <Button onClick={() => navigate("/meditation")} className="gap-2">
+                <Music className="w-4 h-4" />
+                Meditation
+              </Button>
+              <Button onClick={() => navigate("/ai-therapy")} className="gap-2">
+                <Brain className="w-4 h-4" />
+                AI Therapy
+              </Button>
+            </div>
           </div>
         )}
         {/* Top Section: Mood Summary & Achievements */}
