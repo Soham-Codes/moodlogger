@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Mic, MicOff, Volume2 } from "lucide-react";
+import { Mic, Volume2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 type Message = {
@@ -18,8 +18,6 @@ const AITherapy = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -56,35 +54,73 @@ const AITherapy = () => {
       }
     };
 
+    // Load voices for text-to-speech
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+
     initSession();
   }, []);
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
+      // Check for speech recognition support
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        toast({
+          title: "Not Supported",
+          description: "Speech recognition is not supported in this browser. Please use Chrome or Edge.",
+          variant: "destructive"
+        });
+        return;
+      }
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
 
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        await processAudio(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
       setIsRecording(true);
       
       toast({
-        title: "Recording",
+        title: "Listening",
         description: "Speak freely, I'm listening..."
       });
+
+      recognition.onresult = async (event: any) => {
+        const transcribedText = event.results[0][0].transcript;
+        console.log('Transcribed:', transcribedText);
+        
+        setIsRecording(false);
+        setIsProcessing(true);
+        
+        const userMessage: Message = { role: "user", content: transcribedText };
+        setMessages(prev => [...prev, userMessage]);
+
+        // Get AI response
+        await getAIResponse([...messages, userMessage]);
+        setIsProcessing(false);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsRecording(false);
+        toast({
+          title: "Recognition Error",
+          description: "Could not recognize speech. Please try again.",
+          variant: "destructive"
+        });
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognition.start();
     } catch (error) {
       console.error('Error accessing microphone:', error);
       toast({
@@ -92,47 +128,10 @@ const AITherapy = () => {
         description: "Could not access microphone. Please check permissions.",
         variant: "destructive"
       });
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
       setIsRecording(false);
-      setIsProcessing(true);
     }
   };
 
-  const processAudio = async (audioBlob: Blob) => {
-    try {
-      // Convert audio to base64
-      const reader = new FileReader();
-      reader.readAsDataURL(audioBlob);
-      reader.onloadend = async () => {
-        const base64Audio = reader.result?.toString().split(',')[1];
-        if (!base64Audio) return;
-
-        // Here you would call a speech-to-text API
-        // For now, we'll simulate it with a placeholder
-        const transcribedText = "I've been feeling overwhelmed lately..."; // Placeholder
-        
-        const userMessage: Message = { role: "user", content: transcribedText };
-        setMessages(prev => [...prev, userMessage]);
-
-        // Get AI response
-        await getAIResponse([...messages, userMessage]);
-      };
-    } catch (error) {
-      console.error('Error processing audio:', error);
-      toast({
-        title: "Processing Error",
-        description: "Failed to process audio",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   const getAIResponse = async (conversationMessages: Message[]) => {
     try {
@@ -227,10 +226,33 @@ const AITherapy = () => {
   const speakText = async (text: string) => {
     if ('speechSynthesis' in window) {
       setIsSpeaking(true);
+      
+      // Get the best available voice
+      const voices = window.speechSynthesis.getVoices();
+      
+      // Prefer enhanced/premium voices, then female English voices
+      const bestVoice = voices.find(voice => 
+        voice.lang.startsWith('en') && 
+        (voice.name.includes('Enhanced') || voice.name.includes('Premium') || voice.name.includes('Natural'))
+      ) || voices.find(voice => 
+        voice.lang.startsWith('en') && voice.name.includes('Female')
+      ) || voices.find(voice => 
+        voice.lang.startsWith('en') && !voice.name.includes('Male')
+      ) || voices.find(voice => voice.lang.startsWith('en'));
+
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
+      utterance.rate = 0.85; // Slightly slower for more natural, calming effect
+      utterance.pitch = 1.1; // Slightly higher for warmth
+      utterance.volume = 1;
+      
+      if (bestVoice) {
+        utterance.voice = bestVoice;
+        console.log('Using voice:', bestVoice.name);
+      }
+      
       utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+      
       window.speechSynthesis.speak(utterance);
     }
   };
@@ -315,14 +337,17 @@ const AITherapy = () => {
                   <Mic className="w-6 h-6" />
                 </Button>
               ) : (
-                <Button
-                  onClick={stopRecording}
-                  size="lg"
-                  variant="destructive"
-                  className="rounded-full w-16 h-16 animate-pulse"
-                >
-                  <MicOff className="w-6 h-6" />
-                </Button>
+                <div className="flex flex-col items-center gap-2">
+                  <Button
+                    size="lg"
+                    variant="destructive"
+                    className="rounded-full w-16 h-16 animate-pulse"
+                    disabled
+                  >
+                    <Mic className="w-6 h-6" />
+                  </Button>
+                  <p className="text-sm text-muted-foreground">Listening...</p>
+                </div>
               )}
             </div>
           </CardContent>
