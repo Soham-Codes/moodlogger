@@ -151,6 +151,9 @@ const Dashboard = () => {
                 <Brain className="w-4 h-4" />
                 AI Therapy
               </Button>
+              <Button onClick={() => navigate("/mood-support")} className="gap-2" variant="secondary">
+                I am not feeling well 😔
+              </Button>
             </div>
           </div>
         )}
