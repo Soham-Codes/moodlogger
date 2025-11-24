@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { toast } from "sonner";
 import { Heart, Loader2 } from "lucide-react";
 import { z } from "zod";
+import { SurveyModal } from "@/components/SurveyModal";
 
 // Validation schemas
 const signUpSchema = z.object({
@@ -56,6 +57,19 @@ const Auth = () => {
   const [resetEmail, setResetEmail] = useState("");
   const [isResetLoading, setIsResetLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showSurveyModal, setShowSurveyModal] = useState(false);
+  const [newUserId, setNewUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/dashboard");
+      }
+    };
+    checkAuth();
+  }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,7 +97,13 @@ const Auth = () => {
       if (error) throw error;
 
       toast.success("Account created successfully!");
-      navigate("/dashboard");
+      
+      // Get the newly created user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setNewUserId(user.id);
+        setShowSurveyModal(true);
+      }
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
@@ -306,6 +326,18 @@ const Auth = () => {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Survey Modal after signup */}
+      {newUserId && (
+        <SurveyModal
+          isOpen={showSurveyModal}
+          onClose={() => {
+            setShowSurveyModal(false);
+            navigate("/dashboard");
+          }}
+          userId={newUserId}
+        />
+      )}
     </div>
   );
 };

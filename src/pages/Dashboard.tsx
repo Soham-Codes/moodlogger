@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { LogOut, BookOpen, Flame, AlertCircle, Brain, Music } from "lucide-react";
+import { LogOut, BookOpen, Flame, AlertCircle, Brain, Music, UserCircle } from "lucide-react";
 import { toast } from "sonner";
 import MoodLogger from "@/components/MoodLogger";
 import MoodHistory from "@/components/MoodHistory";
@@ -116,6 +116,10 @@ const Dashboard = () => {
             <Button variant="outline" size="sm" onClick={() => navigate("/resources")}>
               <BookOpen className="w-4 h-4 mr-2" />
               Resources
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate("/account")}>
+              <UserCircle className="w-4 h-4 mr-2" />
+              Account
             </Button>
             <Button variant="destructive" size="sm" onClick={() => {
               const element = document.getElementById("crisis-resources");
