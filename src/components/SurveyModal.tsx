@@ -36,6 +36,7 @@ export const SurveyModal = ({ isOpen, onClose, userId }: SurveyModalProps) => {
   const [loading, setLoading] = useState(false);
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [hobbiesText, setHobbiesText] = useState("");
+  const [otherText, setOtherText] = useState("");
 
   const handleConditionToggle = (condition: string) => {
     setSelectedConditions(prev =>
@@ -54,11 +55,18 @@ export const SurveyModal = ({ isOpen, onClose, userId }: SurveyModalProps) => {
       .map(h => h.trim())
       .filter(h => h.length > 0);
 
+    // If "Other" is selected and otherText is provided, add it to conditions
+    const conditionsToSave = [...selectedConditions];
+    if (selectedConditions.includes("Other") && otherText.trim()) {
+      const otherIndex = conditionsToSave.indexOf("Other");
+      conditionsToSave[otherIndex] = `Other: ${otherText.trim()}`;
+    }
+
     const { error } = await supabase
       .from('user_survey')
       .insert({
         user_id: userId,
-        mental_health_conditions: selectedConditions,
+        mental_health_conditions: conditionsToSave,
         hobbies_interests: hobbiesArray,
       });
 
@@ -116,6 +124,17 @@ export const SurveyModal = ({ isOpen, onClose, userId }: SurveyModalProps) => {
                 </div>
               ))}
             </div>
+            
+            {selectedConditions.includes("Other") && (
+              <Textarea
+                placeholder="Please specify..."
+                value={otherText}
+                onChange={(e) => setOtherText(e.target.value)}
+                maxLength={200}
+                rows={2}
+                className="mt-3"
+              />
+            )}
           </div>
 
           {/* Hobbies Section */}
