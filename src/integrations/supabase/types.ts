@@ -305,6 +305,41 @@ export type Database = {
         }
         Relationships: []
       }
+      user_survey: {
+        Row: {
+          completed_at: string | null
+          hobbies_interests: string[] | null
+          id: string
+          mental_health_conditions: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          hobbies_interests?: string[] | null
+          id?: string
+          mental_health_conditions?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          hobbies_interests?: string[] | null
+          id?: string
+          mental_health_conditions?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_survey_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

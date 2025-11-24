@@ -10,6 +10,7 @@ import Resources from "./pages/Resources";
 import ResetPassword from "./pages/ResetPassword";
 import Meditation from "./pages/Meditation";
 import AITherapy from "./pages/AITherapy";
+import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/meditation" element={<Meditation />} />
           <Route path="/ai-therapy" element={<AITherapy />} />
+          <Route path="/account" element={<Account />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
