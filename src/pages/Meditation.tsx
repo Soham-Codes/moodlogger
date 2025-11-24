@@ -14,6 +14,7 @@ type MeditationType = "guided" | "nature" | "calming" | "breathing";
 const Meditation = () => {
   const [meditationType, setMeditationType] = useState<MeditationType>("guided");
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [showReflection, setShowReflection] = useState(false);
   const [moodBefore, setMoodBefore] = useState(5);
   const [moodAfter, setMoodAfter] = useState(5);
@@ -45,6 +46,7 @@ const Meditation = () => {
         ref.current.currentTime = 0;
       }
     });
+    setIsAudioPlaying(false);
   }, [meditationType]);
 
   const meditationContent = {
@@ -100,20 +102,28 @@ const Meditation = () => {
       setSessionId(data.id);
     }
 
-    // Play audio
-    const currentAudio = audioRefs[meditationType].current;
-    if (currentAudio) {
-      currentAudio.play();
-    }
-
     toast({
       title: "Meditation Started",
       description: "Take your time and enjoy the practice"
     });
   };
 
+  const handlePlayPause = () => {
+    const currentAudio = audioRefs[meditationType].current;
+    if (currentAudio) {
+      if (isAudioPlaying) {
+        currentAudio.pause();
+        setIsAudioPlaying(false);
+      } else {
+        currentAudio.play();
+        setIsAudioPlaying(true);
+      }
+    }
+  };
+
   const handleStop = async () => {
     setIsPlaying(false);
+    setIsAudioPlaying(false);
     
     // Stop audio
     const currentAudio = audioRefs[meditationType].current;
@@ -224,7 +234,28 @@ const Meditation = () => {
                       />
                     </div>
 
-                    <div className="flex justify-center">
+                    <div className="flex flex-col items-center gap-4">
+                      {isPlaying && (
+                        <Button 
+                          onClick={handlePlayPause} 
+                          size="lg" 
+                          variant="outline"
+                          className="gap-2"
+                        >
+                          {isAudioPlaying ? (
+                            <>
+                              <Square className="w-5 h-5" />
+                              Pause Music
+                            </>
+                          ) : (
+                            <>
+                              <Play className="w-5 h-5" />
+                              Play Music
+                            </>
+                          )}
+                        </Button>
+                      )}
+                      
                       {!isPlaying ? (
                         <Button onClick={handleStart} size="lg" className="gap-2">
                           <Play className="w-5 h-5" />
