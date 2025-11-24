@@ -320,6 +320,7 @@ const Meditation = () => {
                 <div>
                   <label className="text-sm font-medium mb-2 block">Notes (Optional)</label>
                   <Textarea
+                    maxLength={1000}
                     value={reflectionNotes}
                     onChange={(e) => setReflectionNotes(e.target.value)}
                     placeholder="How did this meditation make you feel? Any insights?"

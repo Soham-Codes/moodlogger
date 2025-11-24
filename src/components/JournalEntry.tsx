@@ -106,6 +106,7 @@ const JournalEntry = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <Textarea
+          maxLength={10000}
           placeholder="Write your thoughts here... This is your private journal space."
           value={content}
           onChange={(e) => setContent(e.target.value)}

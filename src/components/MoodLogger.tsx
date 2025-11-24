@@ -190,6 +190,7 @@ const MoodLogger = ({ onMoodLogged }: MoodLoggerProps) => {
             </div>
 
             <Textarea
+              maxLength={1000}
               placeholder="How's your day going? (optional)"
               value={note}
               onChange={(e) => setNote(e.target.value)}

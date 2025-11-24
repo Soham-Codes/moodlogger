@@ -76,6 +76,7 @@ const ReflectionPrompts = () => {
         <p className="text-lg font-medium text-center">{todayPrompt}</p>
         <div className="space-y-3">
           <Textarea
+            maxLength={10000}
             placeholder="Write your reflection here..."
             value={reflection}
             onChange={(e) => setReflection(e.target.value)}
