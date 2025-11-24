@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,6 +22,30 @@ const Meditation = () => {
   const [startTime, setStartTime] = useState<Date | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  
+  const audioRefs = {
+    guided: useRef<HTMLAudioElement>(null),
+    nature: useRef<HTMLAudioElement>(null),
+    calming: useRef<HTMLAudioElement>(null),
+    breathing: useRef<HTMLAudioElement>(null)
+  };
+
+  const audioFiles = {
+    guided: "/audio/guided.mp3",
+    nature: "/audio/nature.mp3",
+    calming: "/audio/music.mp3",
+    breathing: "/audio/breathing.mp3"
+  };
+
+  useEffect(() => {
+    // Stop all audio when meditation type changes
+    Object.values(audioRefs).forEach(ref => {
+      if (ref.current) {
+        ref.current.pause();
+        ref.current.currentTime = 0;
+      }
+    });
+  }, [meditationType]);
 
   const meditationContent = {
     guided: {
@@ -76,6 +100,12 @@ const Meditation = () => {
       setSessionId(data.id);
     }
 
+    // Play audio
+    const currentAudio = audioRefs[meditationType].current;
+    if (currentAudio) {
+      currentAudio.play();
+    }
+
     toast({
       title: "Meditation Started",
       description: "Take your time and enjoy the practice"
@@ -84,6 +114,13 @@ const Meditation = () => {
 
   const handleStop = async () => {
     setIsPlaying(false);
+    
+    // Stop audio
+    const currentAudio = audioRefs[meditationType].current;
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
     
     if (sessionId && startTime) {
       const duration = Math.round((new Date().getTime() - startTime.getTime()) / 60000);
@@ -178,13 +215,13 @@ const Meditation = () => {
                     )}
 
                     <div className="flex items-center justify-center gap-4 py-8">
-                      <div className="text-center">
-                        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-2">
-                          <span className="text-2xl">🎵</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">Audio placeholder</p>
-                        <p className="text-xs text-muted-foreground mt-1">Ready for your music files</p>
-                      </div>
+                      <audio 
+                        ref={audioRefs[type as MeditationType]}
+                        src={audioFiles[type as MeditationType]}
+                        loop
+                        className="w-full max-w-md"
+                        controls={false}
+                      />
                     </div>
 
                     <div className="flex justify-center">
