@@ -65,6 +65,24 @@ const AITherapy = () => {
     initSession();
   }, []);
 
+  const checkMicrophonePermissions = async () => {
+    try {
+      console.log('🎤 Checking microphone permissions...');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log('✅ Microphone access granted');
+      stream.getTracks().forEach(track => track.stop()); // Stop the test stream
+      return true;
+    } catch (error) {
+      console.error('❌ Microphone permission denied:', error);
+      toast({
+        title: "Microphone Access Required",
+        description: "Please allow microphone access in your browser settings and refresh the page.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   const startRecording = async () => {
     try {
       // Check for speech recognition support
@@ -79,21 +97,34 @@ const AITherapy = () => {
         return;
       }
 
+      // Check microphone permissions first
+      const hasPermission = await checkMicrophonePermissions();
+      if (!hasPermission) {
+        return;
+      }
+
+      console.log('🎙️ Starting speech recognition...');
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.lang = 'en-US';
+      recognition.maxAlternatives = 1;
 
       setIsRecording(true);
       
       toast({
         title: "Listening",
-        description: "Speak freely, I'm listening..."
+        description: "Speak clearly into your microphone..."
       });
+
+      recognition.onstart = () => {
+        console.log('✅ Speech recognition started');
+      };
 
       recognition.onresult = async (event: any) => {
         const transcribedText = event.results[0][0].transcript;
-        console.log('Transcribed:', transcribedText);
+        const confidence = event.results[0][0].confidence;
+        console.log('📝 Transcribed:', transcribedText, 'Confidence:', confidence);
         
         setIsRecording(false);
         setIsProcessing(true);
@@ -107,25 +138,53 @@ const AITherapy = () => {
       };
 
       recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
+        console.error('❌ Speech recognition error:', event.error, event);
         setIsRecording(false);
+        
+        let errorMessage = "Could not recognize speech. Please try again.";
+        let errorTitle = "Recognition Error";
+        
+        switch(event.error) {
+          case 'network':
+            errorTitle = "Network Error";
+            errorMessage = "Cannot connect to speech recognition service. Check your internet connection and try again.";
+            break;
+          case 'audio-capture':
+            errorTitle = "Microphone Error";
+            errorMessage = "Cannot capture audio. Make sure your microphone is connected and not being used by another app.";
+            break;
+          case 'not-allowed':
+            errorTitle = "Permission Denied";
+            errorMessage = "Microphone access was denied. Please allow microphone access in your browser settings.";
+            break;
+          case 'no-speech':
+            errorTitle = "No Speech Detected";
+            errorMessage = "No speech was detected. Please try speaking closer to the microphone.";
+            break;
+          case 'aborted':
+            errorTitle = "Recognition Aborted";
+            errorMessage = "Speech recognition was stopped. Please try again.";
+            break;
+        }
+        
         toast({
-          title: "Recognition Error",
-          description: "Could not recognize speech. Please try again.",
+          title: errorTitle,
+          description: errorMessage,
           variant: "destructive"
         });
       };
 
       recognition.onend = () => {
+        console.log('🛑 Speech recognition ended');
         setIsRecording(false);
       };
 
       recognition.start();
     } catch (error) {
-      console.error('Error accessing microphone:', error);
+      console.error('❌ Error starting speech recognition:', error);
       toast({
         title: "Microphone Error",
-        description: "Could not access microphone. Please check permissions.",
+        description: "Could not access microphone. Please check permissions and try again.",
         variant: "destructive"
       });
       setIsRecording(false);
@@ -370,10 +429,23 @@ const AITherapy = () => {
 
         <Card className="bg-secondary/30">
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground text-center">
-              <strong>Important:</strong> This AI assistant is not a replacement for professional mental health care.
-              If you're in crisis, please contact a crisis helpline or emergency services immediately.
-            </p>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground text-center">
+                <strong>Important:</strong> This AI assistant is not a replacement for professional mental health care.
+                If you're in crisis, please contact a crisis helpline or emergency services immediately.
+              </p>
+              
+              <div className="text-xs text-muted-foreground text-center space-y-2 border-t pt-4">
+                <p><strong>Microphone Troubleshooting:</strong></p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Make sure your browser has microphone permissions enabled</li>
+                  <li>Close other apps that might be using your microphone</li>
+                  <li>Try refreshing the page if you see network errors</li>
+                  <li>Use Chrome or Edge browser for best compatibility</li>
+                  <li>Check that you have a stable internet connection</li>
+                </ul>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
