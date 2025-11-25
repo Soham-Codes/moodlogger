@@ -23,18 +23,23 @@ const MoodSupport = () => {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         navigate("/auth");
         return;
       }
       setUserId(user.id);
-      
+
       // Add welcome message
-      setMessages([{
-        role: "assistant",
-        content: "Hi there! I'm here to support you. How are you feeling right now? Feel free to share what's on your mind."
-      }]);
+      setMessages([
+        {
+          role: "assistant",
+          content:
+            "Hi there! I'm here to support you. How are you feeling right now? Feel free to share what's on your mind.",
+        },
+      ]);
     };
     getUser();
   }, [navigate]);
@@ -47,22 +52,19 @@ const MoodSupport = () => {
     if (!userId) return;
 
     const conversationHistory = [...messages, { role: "user" as const, content: userMessage }];
-    
+
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mood-chat`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            messages: conversationHistory,
-            userId: userId,
-          }),
-        }
-      );
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mood-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: conversationHistory,
+          userId: userId,
+        }),
+      });
 
       if (!response.ok || !response.body) {
         throw new Error("Failed to get response");
@@ -73,7 +75,7 @@ const MoodSupport = () => {
       let assistantMessage = "";
 
       // Add empty assistant message to start streaming into
-      setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
       while (true) {
         const { done, value } = await reader.read();
@@ -92,7 +94,7 @@ const MoodSupport = () => {
               const content = parsed.choices?.[0]?.delta?.content;
               if (content) {
                 assistantMessage += content;
-                setMessages(prev => {
+                setMessages((prev) => {
                   const newMessages = [...prev];
                   newMessages[newMessages.length - 1].content = assistantMessage;
                   return newMessages;
@@ -112,7 +114,7 @@ const MoodSupport = () => {
         variant: "destructive",
       });
       // Remove the empty assistant message if streaming failed
-      setMessages(prev => prev.slice(0, -1));
+      setMessages((prev) => prev.slice(0, -1));
     }
   };
 
@@ -121,7 +123,7 @@ const MoodSupport = () => {
 
     const userMessage = input.trim();
     setInput("");
-    setMessages(prev => [...prev, { role: "user", content: userMessage }]);
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
 
     await streamChat(userMessage);
@@ -147,22 +149,18 @@ const MoodSupport = () => {
             <h1 className="text-2xl font-bold">Mood Support Chat</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            This is a trained AI that is here to help you get through it, you got this! The AI has been trained to understand what you like and what you are struggling with according to the data you provided us.
+            This is a trained AI model that is here to help you get through it, you got this! The AI has been trained to
+            understand what you like to do and what you are struggling with according to the data you provided us.
           </p>
         </div>
 
         <Card className="p-6 mb-4 h-[calc(100vh-250px)] overflow-y-auto">
           <div className="space-y-4">
             {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
+              <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
                   className={`max-w-[80%] rounded-lg p-4 ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
+                    message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{message.content}</p>
