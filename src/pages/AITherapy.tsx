@@ -18,6 +18,7 @@ const AITherapy = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [textInput, setTextInput] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -64,6 +65,18 @@ const AITherapy = () => {
 
     initSession();
   }, []);
+
+  const sendTextMessage = async () => {
+    if (!textInput.trim()) return;
+    
+    const userMessage: Message = { role: "user", content: textInput.trim() };
+    setMessages(prev => [...prev, userMessage]);
+    setTextInput("");
+    setIsProcessing(true);
+
+    await getAIResponse([...messages, userMessage]);
+    setIsProcessing(false);
+  };
 
   const checkMicrophonePermissions = async () => {
     try {
@@ -393,36 +406,61 @@ const AITherapy = () => {
               </div>
             </ScrollArea>
 
-            <div className="flex items-center justify-center gap-4">
-              {isSpeaking && (
-                <div className="flex items-center gap-2 text-primary">
-                  <Volume2 className="w-5 h-5 animate-pulse" />
-                  <span className="text-sm">AI is speaking...</span>
-                </div>
-              )}
-              
-              {!isRecording ? (
-                <Button
-                  onClick={startRecording}
-                  size="lg"
-                  className="rounded-full w-16 h-16"
+            <div className="space-y-4">
+              {/* Text Input */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && !isProcessing && sendTextMessage()}
+                  placeholder="Type your message here..."
                   disabled={isProcessing || isSpeaking}
+                  className="flex-1 px-4 py-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <Button
+                  onClick={sendTextMessage}
+                  disabled={isProcessing || isSpeaking || !textInput.trim()}
+                  size="lg"
                 >
-                  <Mic className="w-6 h-6" />
+                  Send
                 </Button>
-              ) : (
-                <div className="flex flex-col items-center gap-2">
+              </div>
+
+              {/* Voice Input */}
+              <div className="flex items-center justify-center gap-4">
+                <div className="text-sm text-muted-foreground">or use voice:</div>
+                
+                {isSpeaking && (
+                  <div className="flex items-center gap-2 text-primary">
+                    <Volume2 className="w-5 h-5 animate-pulse" />
+                    <span className="text-sm">AI is speaking...</span>
+                  </div>
+                )}
+                
+                {!isRecording ? (
                   <Button
+                    onClick={startRecording}
                     size="lg"
-                    variant="destructive"
-                    className="rounded-full w-16 h-16 animate-pulse"
-                    disabled
+                    className="rounded-full w-16 h-16"
+                    disabled={isProcessing || isSpeaking}
                   >
                     <Mic className="w-6 h-6" />
                   </Button>
-                  <p className="text-sm text-muted-foreground">Listening...</p>
-                </div>
-              )}
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <Button
+                      size="lg"
+                      variant="destructive"
+                      className="rounded-full w-16 h-16 animate-pulse"
+                      disabled
+                    >
+                      <Mic className="w-6 h-6" />
+                    </Button>
+                    <p className="text-sm text-muted-foreground">Listening...</p>
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
