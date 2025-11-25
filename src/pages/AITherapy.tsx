@@ -352,9 +352,14 @@ const AITherapy = () => {
             <h1 className="text-4xl font-bold">AI Therapy</h1>
             <p className="text-muted-foreground mt-2">A safe space to talk and be heard</p>
           </div>
-          <Button variant="outline" onClick={endSession}>
-            End Session
-          </Button>
+          <div className="flex flex-col items-end gap-2">
+            <p className="text-xs text-muted-foreground italic">
+              ⚠️ Beta Testing: AI responses may not be completely accurate
+            </p>
+            <Button variant="outline" onClick={endSession}>
+              End Session
+            </Button>
+          </div>
         </div>
 
         <Card className="h-[600px] flex flex-col">
@@ -365,8 +370,8 @@ const AITherapy = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col">
-            <ScrollArea className="flex-1 pr-4 mb-4">
-              <div className="space-y-4">
+            <ScrollArea className="flex-1 pr-4 mb-4 h-[450px]">
+              <div className="space-y-4 pr-4">
                 {messages.map((msg, idx) => (
                   <div
                     key={idx}
