@@ -138,6 +138,8 @@ const AITherapy = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      console.log('📤 Sending messages to AI:', conversationMessages);
+
       let assistantMessage = "";
       setMessages(prev => [...prev, { role: "assistant", content: "" }]);
 
@@ -150,8 +152,16 @@ const AITherapy = () => {
         body: JSON.stringify({ messages: conversationMessages }),
       });
 
-      if (!response.ok || !response.body) {
-        throw new Error("Failed to get response");
+      console.log('📡 Response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`API returned ${response.status}: ${errorText}`);
+      }
+      
+      if (!response.body) {
+        throw new Error("No response body received");
       }
 
       const reader = response.body.getReader();
@@ -188,10 +198,12 @@ const AITherapy = () => {
               });
             }
           } catch (e) {
-            console.error('Error parsing chunk:', e);
+            console.error('❌ Error parsing streaming chunk:', e, 'Raw line:', line);
           }
         }
       }
+
+      console.log('✅ Complete AI response received:', assistantMessage);
 
       // Speak the response
       await speakText(assistantMessage);
@@ -214,12 +226,15 @@ const AITherapy = () => {
         ]);
       }
     } catch (error) {
-      console.error('Error getting AI response:', error);
+      console.error('❌ Error getting AI response:', error);
       toast({
         title: "Error",
-        description: "Failed to get response from AI",
+        description: error instanceof Error ? error.message : "Failed to get response from AI",
         variant: "destructive"
       });
+      
+      // Remove the empty assistant message that was added
+      setMessages(prev => prev.slice(0, -1));
     }
   };
 
