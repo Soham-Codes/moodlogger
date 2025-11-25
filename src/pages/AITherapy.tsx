@@ -369,8 +369,8 @@ const AITherapy = () => {
               Tap the microphone to speak. Your conversation is private and secure.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col">
-            <ScrollArea className="flex-1 pr-4 mb-4 h-[450px]">
+          <CardContent className="flex-1 flex flex-col min-h-0">
+            <ScrollArea className="flex-1 pr-4 mb-4">
               <div className="space-y-4 pr-4">
                 {messages.map((msg, idx) => (
                   <div
@@ -398,9 +398,9 @@ const AITherapy = () => {
               </div>
             </ScrollArea>
 
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex flex-col items-center gap-2 pt-4 border-t">
               {isSpeaking && (
-                <div className="flex items-center gap-2 text-primary">
+                <div className="flex items-center gap-2 text-primary mb-2">
                   <Volume2 className="w-5 h-5 animate-pulse" />
                   <span className="text-sm">AI is speaking...</span>
                 </div>
