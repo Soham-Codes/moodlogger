@@ -138,12 +138,17 @@ const MoodSupport = () => {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-4 flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-          <h1 className="text-2xl font-bold">Mood Support Chat</h1>
+        <div className="mb-4">
+          <div className="flex items-center gap-4 mb-2">
+            <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-2xl font-bold">Mood Support Chat</h1>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            This is a trained AI that is here to help you get through it, you got this! The AI has been trained to understand what you like and what you are struggling with according to the data you provided us.
+          </p>
         </div>
 
         <Card className="p-6 mb-4 h-[calc(100vh-250px)] overflow-y-auto">
