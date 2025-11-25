@@ -8,7 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Mail, User, Lock } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ArrowLeft, Mail, User, Lock, BookOpen } from "lucide-react";
+import { format } from "date-fns";
 
 const MENTAL_HEALTH_OPTIONS = [
   "Depression",
@@ -37,6 +40,10 @@ export default function Account() {
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [hobbiesText, setHobbiesText] = useState("");
   const [surveyExists, setSurveyExists] = useState(false);
+  
+  // Journal entries
+  const [journalEntries, setJournalEntries] = useState<any[]>([]);
+  const [selectedEntry, setSelectedEntry] = useState<any>(null);
 
   useEffect(() => {
     fetchUserData();
@@ -75,6 +82,17 @@ export default function Account() {
         setSurveyExists(true);
         setSelectedConditions(survey.mental_health_conditions || []);
         setHobbiesText((survey.hobbies_interests || []).join(", "));
+      }
+
+      // Fetch journal entries
+      const { data: entries } = await supabase
+        .from("journal_entries")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (entries) {
+        setJournalEntries(entries);
       }
 
       setLoading(false);
@@ -300,8 +318,66 @@ export default function Account() {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Journal Entries Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                My Journal Entries
+              </CardTitle>
+              <CardDescription>
+                Your daily reflections and thoughts
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {journalEntries.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  No journal entries yet. Start writing from the Dashboard!
+                </p>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {journalEntries.map((entry) => (
+                    <Card
+                      key={entry.id}
+                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => setSelectedEntry(entry)}
+                    >
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium">
+                          {format(new Date(entry.created_at), "MMMM d, yyyy")}
+                        </CardTitle>
+                        <CardDescription className="text-xs">
+                          {format(new Date(entry.created_at), "h:mm a")}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm line-clamp-3">
+                          {entry.content}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      {/* Journal Entry Dialog */}
+      <Dialog open={!!selectedEntry} onOpenChange={() => setSelectedEntry(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedEntry && format(new Date(selectedEntry.created_at), "MMMM d, yyyy 'at' h:mm a")}
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh] pr-4">
+            <p className="text-sm whitespace-pre-wrap">{selectedEntry?.content}</p>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
