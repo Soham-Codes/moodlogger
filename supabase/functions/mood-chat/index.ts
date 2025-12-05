@@ -13,8 +13,7 @@ const messageSchema = z.object({
 });
 
 const requestSchema = z.object({
-  messages: z.array(messageSchema).min(1).max(50),
-  userId: z.string().uuid()
+  messages: z.array(messageSchema).min(1).max(50)
 });
 
 serve(async (req) => {
@@ -40,25 +39,53 @@ serve(async (req) => {
       );
     }
     
-    const { messages, userId } = validationResult.data;
+    const { messages } = validationResult.data;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Fetch user survey data
-    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    // Get the user's auth token from the request header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Authorization header required" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Create Supabase client with user's JWT to enforce RLS
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Get the authenticated user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Fetch user survey data - RLS will enforce user can only access their own data
     const { data: surveyData, error: surveyError } = await supabase
       .from('user_survey')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
       .single();
 
     if (surveyError) {
-      console.log("No survey data found for user:", userId);
+      console.log("No survey data found for user:", user.id);
     }
 
     // Build system prompt based on user data
