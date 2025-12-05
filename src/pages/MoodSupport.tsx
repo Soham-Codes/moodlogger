@@ -54,15 +54,20 @@ const MoodSupport = () => {
     const conversationHistory = [...messages, { role: "user" as const, content: userMessage }];
 
     try {
+      // Get the user's session token for proper RLS enforcement
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error("No active session");
+      }
+
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mood-chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           messages: conversationHistory,
-          userId: userId,
         }),
       });
 
