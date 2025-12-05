@@ -104,7 +104,7 @@ const Dashboard = () => {
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <span className="text-2xl">💛</span>
             </div>
-            <h1 className="text-xl font-bold">Mood Logger</h1>
+            <h1 className="text-xl font-bold">MoodLogger</h1>
           </div>
           <div className="flex items-center gap-4">
             {streak > 0 && (

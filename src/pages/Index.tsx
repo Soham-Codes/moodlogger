@@ -128,8 +128,8 @@ const Index = () => {
       {/* Footer */}
       <footer className="py-12 px-4 border-t bg-muted/20">
         <div className="container mx-auto text-center space-y-4">
-          <img src={moodLoggerLogo} alt="Mood Logger" className="w-12 h-12 mx-auto opacity-80" />
-          <p className="text-muted-foreground text-sm">© 2025 Mood Logger. Supporting students, one day at a time.</p>
+          <img src={moodLoggerLogo} alt="MoodLogger" className="w-12 h-12 mx-auto opacity-80" />
+          <p className="text-muted-foreground text-sm">© 2025 MoodLogger. Supporting students, one day at a time.</p>
           <p className="text-xs text-muted-foreground">
             Your mental health matters. Track with care, reflect with kindness.
           </p>

@@ -185,7 +185,7 @@ const Auth = () => {
               <Heart className="w-8 h-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold">Mood Logger</CardTitle>
+          <CardTitle className="text-3xl font-bold">MoodLogger</CardTitle>
           <CardDescription>Track your mood, find support, thrive in your journey</CardDescription>
         </CardHeader>
         <CardContent>
