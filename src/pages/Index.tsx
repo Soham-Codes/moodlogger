@@ -13,23 +13,23 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <div className="inline-block mb-6 animate-fade-in">
-              <img 
-                src={moodLoggerLogo} 
-                alt="Mood Logger - Track your mental wellbeing" 
-                className="w-24 h-24 md:w-32 md:h-32 mx-auto drop-shadow-lg" 
+              <img
+                src={moodLoggerLogo}
+                alt="MoodLogger - Track your mental wellbeing"
+                className="w-24 h-24 md:w-32 md:h-32 mx-auto drop-shadow-lg"
               />
             </div>
-            
+
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold animate-fade-in leading-tight">
               Your Mental Wellbeing,
               <span className="block text-primary mt-2">Simplified</span>
             </h1>
-            
+
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-in leading-relaxed">
-              Track your daily mood, journal your thoughts, and get personalized wellness tips. 
-              Built for students who want to prioritize their mental health.
+              Track your daily mood, journal your thoughts, and get personalized wellness tips. Built for students who
+              want to prioritize their mental health.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6 animate-fade-in">
               <Button
                 size="lg"
@@ -47,7 +47,7 @@ const Index = () => {
                 Sign In
               </Button>
             </div>
-            
+
             <p className="text-sm text-muted-foreground animate-fade-in pt-2">
               ✨ Free forever • No credit card required • Privacy first
             </p>
@@ -64,7 +64,7 @@ const Index = () => {
               Simple tools designed to help you understand and improve your mental health journey
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             <div className="group text-center space-y-4 p-8 rounded-2xl bg-card border-2 border-transparent hover:border-primary/20 shadow-md hover:shadow-xl transition-all duration-300">
               <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
@@ -75,7 +75,7 @@ const Index = () => {
                 Quick daily check-ins help you identify patterns, triggers, and what truly impacts your wellbeing
               </p>
             </div>
-            
+
             <div className="group text-center space-y-4 p-8 rounded-2xl bg-card border-2 border-transparent hover:border-secondary/20 shadow-md hover:shadow-xl transition-all duration-300">
               <div className="w-20 h-20 rounded-2xl bg-secondary/10 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                 <Sparkles className="w-10 h-10 text-secondary" />
@@ -85,7 +85,7 @@ const Index = () => {
                 Receive evidence-based wellness recommendations tailored to how you're feeling each day
               </p>
             </div>
-            
+
             <div className="group text-center space-y-4 p-8 rounded-2xl bg-card border-2 border-transparent hover:border-accent/20 shadow-md hover:shadow-xl transition-all duration-300">
               <div className="w-20 h-20 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                 <Shield className="w-10 h-10 text-accent" />
@@ -105,13 +105,14 @@ const Index = () => {
           <div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full blur-3xl"></div>
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-white rounded-full blur-3xl"></div>
         </div>
-        
+
         <div className="container mx-auto max-w-3xl text-center space-y-8 relative z-10">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
             Ready to Prioritize Your Wellbeing?
           </h2>
           <p className="text-xl md:text-2xl text-primary-foreground/90 max-w-2xl mx-auto leading-relaxed">
-            Join thousands of students taking control of their mental health journey. Start tracking today—it's free, private, and takes less than a minute.
+            Join thousands of students taking control of their mental health journey. Start tracking today—it's free,
+            private, and takes less than a minute.
           </p>
           <Button
             size="lg"
@@ -128,9 +129,7 @@ const Index = () => {
       <footer className="py-12 px-4 border-t bg-muted/20">
         <div className="container mx-auto text-center space-y-4">
           <img src={moodLoggerLogo} alt="Mood Logger" className="w-12 h-12 mx-auto opacity-80" />
-          <p className="text-muted-foreground text-sm">
-            © 2025 Mood Logger. Supporting students, one day at a time.
-          </p>
+          <p className="text-muted-foreground text-sm">© 2025 Mood Logger. Supporting students, one day at a time.</p>
           <p className="text-xs text-muted-foreground">
             Your mental health matters. Track with care, reflect with kindness.
           </p>
